@@ -90,7 +90,31 @@ jobs:
           host: ${{ steps.server_ip.outputs.value }}
           username: root
           key: ${{ secrets.SSH_KEY }}
-          script: 'set -x && AUTO_INSTALL=y bash -x ~/zsh-setup/zsh_setup.sh && ps aux | grep openvpn | grep -v grep > /dev/null 2>&1 && echo "Success: OpenVPN is running" && exit 0 || echo "Failure: OpenVPN is not running" && exit 1'
+          script: |
+            set -x
+            export AUTO_INSTALL=y
+            # Run the setup script and capture exit code
+            bash -x ~/zsh-setup/zsh_setup.sh
+            EXIT_CODE=$?
+
+            # Additional verification
+            echo "=== Additional verification ==="
+            [ -f ~/.zshrc ] && echo "✓ .zshrc exists" || echo "✗ .zshrc missing"
+            [ -d ~/.oh-my-zsh ] && echo "✓ Oh My Zsh directory exists" || echo "✗ Oh My Zsh directory missing"
+            [ -d ~/.oh-my-zsh/custom/themes/powerlevel10k ] && echo "✓ Powerlevel10k exists" || echo "✗ Powerlevel10k missing"
+            which zsh >/dev/null 2>&1 && echo "✓ zsh is installed" || echo "✗ zsh not installed"
+
+            # Test if we can source zshrc without errors
+            if [ -f ~/.zshrc ]; then
+              if zsh -c "source ~/.zshrc && echo '✓ .zshrc can be sourced successfully'"; then
+                echo "✓ .zshrc sourcing test passed"
+              else
+                echo "✗ .zshrc sourcing test failed"
+                EXIT_CODE=1
+              fi
+            fi
+
+            exit $EXIT_CODE
 
       - name: Delete server
         run: doctl compute droplet delete -f openvpn-action-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER-${{ matrix.os-image }}
