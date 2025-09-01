@@ -1,5 +1,4 @@
 ---
-
 name: Test ZSH Setup Script
 
 on:
@@ -12,6 +11,8 @@ on:
 jobs:
   test-zsh-setup:
     runs-on: ubuntu-latest
+    permissions: read-all
+
     strategy:
       matrix:
         platform: [ubuntu-22.04, ubuntu-20.04, debian-11, rocky-8, fedora-38]
@@ -32,273 +33,279 @@ jobs:
       options: --privileged
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install basic dependencies
-      run: |
-        # Install common dependencies for all platforms
-        if command -v apt-get >/dev/null 2>&1; then
-          apt-get update
-          apt-get install -y curl git sudo procps
-        elif command -v yum >/dev/null 2>&1; then
-          yum install -y curl git sudo procps-ng
-        elif command -v dnf >/dev/null 2>&1; then
-          dnf install -y curl git sudo procps-ng
-        fi
+      - name: Install basic dependencies
+        run: |
+          # Install common dependencies for all platforms
+          if command -v apt-get >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y curl git sudo procps
+          elif command -v yum >/dev/null 2>&1; then
+            yum install -y curl git sudo procps-ng
+          elif command -v dnf >/dev/null 2>&1; then
+            dnf install -y curl git sudo procps-ng
+          fi
 
-    - name: Make script executable
-      run: chmod +x zsh_setup.sh
+      - name: Make script executable
+        run: chmod +x zsh_setup.sh
 
-    - name: Run zsh setup script in headless mode
-      run: |
-        set -x
-        export AUTO_INSTALL=y
-        timeout 300 bash -x ./zsh_setup.sh
-        EXIT_CODE=$?
-        
-        if [ $EXIT_CODE -eq 124 ]; then
-          echo "❌ Script timed out after 5 minutes"
-          exit 1
-        elif [ $EXIT_CODE -ne 0 ]; then
-          echo "❌ Script failed with exit code $EXIT_CODE"
-          exit $EXIT_CODE
-        fi
+      - name: Run zsh setup script in headless mode
+        run: |
+          set -x
+          export AUTO_INSTALL=y
+          timeout 300 bash -x ./zsh_setup.sh
+          EXIT_CODE=$?
 
-    - name: Verify installation
-      run: |
-        echo "=== Running comprehensive verification ==="
+          if [ $EXIT_CODE -eq 124 ]; then
+            echo "❌ Script timed out after 5 minutes"
+            exit 1
+          elif [ $EXIT_CODE -ne 0 ]; then
+            echo "❌ Script failed with exit code $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
 
-        # Check basic components - используем простой цикл вместо массива индексов
-        FAILED=0
+      - name: Verify installation
+        run: |
+          echo "=== Running comprehensive verification ==="
 
-        # ZSH installed
-        if command -v zsh >/dev/null 2>&1; then
-          echo "✅ ZSH installed"
-        else
-          echo "❌ ZSH installed - FAILED"
-          FAILED=1
-        fi
+          # Check basic components - используем простой цикл вместо массива индексов
+          FAILED=0
 
-        # Oh My Zsh directory exists
-        if test -d ~/.oh-my-zsh; then
-          echo "✅ Oh My Zsh directory exists"
-        else
-          echo "❌ Oh My Zsh directory exists - FAILED"
-          FAILED=1
-        fi
-
-        # Powerlevel10k theme exists
-        if test -d ~/.oh-my-zsh/custom/themes/powerlevel10k; then
-          echo "✅ Powerlevel10k theme exists"
-        else
-          echo "❌ Powerlevel10k theme exists - FAILED"
-          FAILED=1
-        fi
-
-        # zsh-autosuggestions plugin exists
-        if test -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions; then
-          echo "✅ zsh-autosuggestions plugin exists"
-        else
-          echo "❌ zsh-autosuggestions plugin exists - FAILED"
-          FAILED=1
-        fi
-
-        # zsh-syntax-highlighting plugin exists
-        if test -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting; then
-          echo "✅ zsh-syntax-highlighting plugin exists"
-        else
-          echo "❌ zsh-syntax-highlighting plugin exists - FAILED"
-          FAILED=1
-        fi
-
-        # .zshrc file exists
-        if test -f ~/.zshrc; then
-          echo "✅ .zshrc file exists"
-        else
-          echo "❌ .zshrc file exists - FAILED"
-          FAILED=1
-        fi
-
-        # .zshrc backup exists if needed
-        if test -f ~/.zshrc.backup; then
-          echo "✅ .zshrc backup exists"
-        else
-          echo "ℹ️  No backup needed"
-        fi
-
-        # Test .zshrc syntax
-        if command -v zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
-          if zsh -n ~/.zshrc 2>/dev/null; then
-            echo "✅ .zshrc syntax is valid"
+          # ZSH installed
+          if command -v zsh >/dev/null 2>&1; then
+            echo "✅ ZSH installed"
           else
-            echo "❌ .zshrc syntax is invalid"
-            zsh -n ~/.zshrc || true
+            echo "❌ ZSH installed - FAILED"
             FAILED=1
           fi
-        fi
 
-        # Test sourcing .zshrc
-        if command -v zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
-          if zsh -c "source ~/.zshrc && echo 'Sourcing successful' && exit 0" 2>/dev/null; then
-            echo "✅ .zshrc can be sourced successfully"
+          # Oh My Zsh directory exists
+          if test -d ~/.oh-my-zsh; then
+            echo "✅ Oh My Zsh directory exists"
           else
-            echo "❌ .zshrc sourcing failed"
+            echo "❌ Oh My Zsh directory exists - FAILED"
             FAILED=1
           fi
-        fi
 
-        # Test basic zsh functionality
-        if command -v zsh >/dev/null 2>&1; then
-          if zsh -c "echo 'ZSH is working!'" 2>/dev/null; then
-            echo "✅ ZSH basic functionality test passed"
+          # Powerlevel10k theme exists
+          if test -d ~/.oh-my-zsh/custom/themes/powerlevel10k; then
+            echo "✅ Powerlevel10k theme exists"
           else
-            echo "❌ ZSH basic functionality test failed"
+            echo "❌ Powerlevel10k theme exists - FAILED"
             FAILED=1
           fi
-        fi
 
-        if [ $FAILED -eq 0 ]; then
-          echo "🎉 All verification tests passed!"
-        else
-          echo "💥 Some verification tests failed!"
-          exit 1
-        fi
-
-    - name: Test plugin functionality
-      run: |
-        echo "=== Testing plugin functionality ==="
-        
-        if command -v zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
-          # Test that plugins are loaded by checking if their functions exist
-          if zsh -c "source ~/.zshrc && typeset -f __zsh_autosuggest_bind_widgets >/dev/null 2>&1 && echo '✅ zsh-autosuggestions functions available'"; then
-            echo "✅ zsh-autosuggestions plugin is properly loaded"
+          # zsh-autosuggestions plugin exists
+          if test -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions; then
+            echo "✅ zsh-autosuggestions plugin exists"
           else
-            echo "⚠ zsh-autosuggestions plugin functions not found (may be normal for headless)"
+            echo "❌ zsh-autosuggestions plugin exists - FAILED"
+            FAILED=1
           fi
-          
-          # Test git aliases
-          if zsh -c "source ~/.zshrc && alias gst >/dev/null 2>&1 && echo '✅ Git aliases available'"; then
-            echo "✅ Git plugin aliases are available"
+
+          # zsh-syntax-highlighting plugin exists
+          if test -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting; then
+            echo "✅ zsh-syntax-highlighting plugin exists"
           else
-            echo "❌ Git plugin aliases not found"
+            echo "❌ zsh-syntax-highlighting plugin exists - FAILED"
+            FAILED=1
+          fi
+
+          # .zshrc file exists
+          if test -f ~/.zshrc; then
+            echo "✅ .zshrc file exists"
+          else
+            echo "❌ .zshrc file exists - FAILED"
+            FAILED=1
+          fi
+
+          # .zshrc backup exists if needed
+          if test -f ~/.zshrc.backup; then
+            echo "✅ .zshrc backup exists"
+          else
+            echo "ℹ️  No backup needed"
+          fi
+
+          # Test .zshrc syntax
+          if command -v zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
+            if zsh -n ~/.zshrc 2>/dev/null; then
+              echo "✅ .zshrc syntax is valid"
+            else
+              echo "❌ .zshrc syntax is invalid"
+              zsh -n ~/.zshrc || true
+              FAILED=1
+            fi
+          fi
+
+          # Test sourcing .zshrc
+          if command -v zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
+            if zsh -c "source ~/.zshrc && echo 'Sourcing successful' && exit 0" 2>/dev/null; then
+              echo "✅ .zshrc can be sourced successfully"
+            else
+              echo "❌ .zshrc sourcing failed"
+              FAILED=1
+            fi
+          fi
+
+          # Test basic zsh functionality
+          if command -v zsh >/dev/null 2>&1; then
+            if zsh -c "echo 'ZSH is working!'" 2>/dev/null; then
+              echo "✅ ZSH basic functionality test passed"
+            else
+              echo "❌ ZSH basic functionality test failed"
+              FAILED=1
+            fi
+          fi
+
+          if [ $FAILED -eq 0 ]; then
+            echo "🎉 All verification tests passed!"
+          else
+            echo "💥 Some verification tests failed!"
             exit 1
           fi
-        fi
 
-    - name: Show file structure
-      if: always()
-      run: |
-        echo "=== Final file structure ==="
-        find ~/.oh-my-zsh -maxdepth 2 -type d -name "custom*" -o -name "themes" -o -name "plugins" | head -20
-        echo "---"
-        # Исправление SC2010: вместо ls | grep используем find
-        find ~/ -maxdepth 1 -name "*zsh*" -o -name "*oh-my*" -o -name ".*zsh*" -o -name ".*oh-my*" 2>/dev/null || true
+      - name: Test plugin functionality
+        run: |
+          echo "=== Testing plugin functionality ==="
+
+          if command -v zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
+            # Test that plugins are loaded by checking if their functions exist
+            if zsh -c "source ~/.zshrc && typeset -f __zsh_autosuggest_bind_widgets >/dev/null 2>&1 && echo '✅ zsh-autosuggestions functions available'"; then
+              echo "✅ zsh-autosuggestions plugin is properly loaded"
+            else
+              echo "⚠ zsh-autosuggestions plugin functions not found (may be normal for headless)"
+            fi
+            
+            # Test git aliases
+            if zsh -c "source ~/.zshrc && alias gst >/dev/null 2>&1 && echo '✅ Git aliases available'"; then
+              echo "✅ Git plugin aliases are available"
+            else
+              echo "❌ Git plugin aliases not found"
+              exit 1
+            fi
+          fi
+
+      - name: Show file structure
+        if: always()
+        run: |
+          echo "=== Final file structure ==="
+          find ~/.oh-my-zsh -maxdepth 2 -type d -name "custom*" -o -name "themes" -o -name "plugins" | head -20
+          echo "---"
+          # Исправление SC2010: вместо ls | grep используем find
+          find ~/ -maxdepth 1 -name "*zsh*" -o -name "*oh-my*" -o -name ".*zsh*" -o -name ".*oh-my*" 2>/dev/null || true
 
   # Альтернативный тест для RHEL-совместимых систем
   test-rhel-like:
     runs-on: ubuntu-latest
+    permissions: read-all
+
     strategy:
       matrix:
         image: [rockylinux:8, almalinux:8]
-    
+
     container:
       image: ${{ matrix.image }}
       options: --privileged
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install basic dependencies (RHEL-like)
-      run: |
-        if command -v yum >/dev/null 2>&1; then
-          yum install -y curl git sudo procps-ng
-        elif command -v dnf >/dev/null 2>&1; then
-          dnf install -y curl git sudo procps-ng
-        fi
+      - name: Install basic dependencies (RHEL-like)
+        run: |
+          if command -v yum >/dev/null 2>&1; then
+            yum install -y curl git sudo procps-ng
+          elif command -v dnf >/dev/null 2>&1; then
+            dnf install -y curl git sudo procps-ng
+          fi
 
-    - name: Make script executable
-      run: chmod +x zsh_setup.sh
+      - name: Make script executable
+        run: chmod +x zsh_setup.sh
 
-    - name: Run zsh setup script
-      run: |
-        set -x
-        export AUTO_INSTALL=y
-        timeout 300 bash -x ./zsh_setup.sh
-        EXIT_CODE=$?
-        
-        if [ $EXIT_CODE -ne 0 ]; then
-          echo "❌ Script failed with exit code $EXIT_CODE"
-          exit $EXIT_CODE
-        fi
+      - name: Run zsh setup script
+        run: |
+          set -x
+          export AUTO_INSTALL=y
+          timeout 300 bash -x ./zsh_setup.sh
+          EXIT_CODE=$?
 
-    - name: Verify RHEL-like installation
-      run: |
-        command -v zsh && echo "✅ ZSH installed"
-        test -d ~/.oh-my-zsh && echo "✅ Oh My Zsh installed"
-        echo "✅ RHEL-like test completed"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "❌ Script failed with exit code $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
+
+      - name: Verify RHEL-like installation
+        run: |
+          command -v zsh && echo "✅ ZSH installed"
+          test -d ~/.oh-my-zsh && echo "✅ Oh My Zsh installed"
+          echo "✅ RHEL-like test completed"
 
   test-macos:
     runs-on: macos-latest
+    permissions: read-all
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install Homebrew (if not present)
-      run: |
-        if ! command -v brew >/dev/null 2>&1; then
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          # Исправление SC2016: используем двойные кавычки и экранирование
-          echo "eval \"\$(/opt/homebrew/bin/brew shellenv)\"" >> ~/.zprofile
-          eval "$(/opt/homebrew/bin/brew shellenv)"
-        fi
+      - name: Install Homebrew (if not present)
+        run: |
+          if ! command -v brew >/dev/null 2>&1; then
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            # Исправление SC2016: используем двойные кавычки и экранирование
+            echo "eval \"\$(/opt/homebrew/bin/brew shellenv)\"" >> ~/.zprofile
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+          fi
 
-    - name: Make script executable
-      run: chmod +x zsh_setup.sh
+      - name: Make script executable
+        run: chmod +x zsh_setup.sh
 
-    - name: Run zsh setup script on macOS
-      run: |
-        set -x
-        export AUTO_INSTALL=y
-        ./zsh_setup.sh
-        EXIT_CODE=$?
-        
-        if [ $EXIT_CODE -ne 0 ]; then
-          echo "❌ Script failed with exit code $EXIT_CODE"
-          exit $EXIT_CODE
-        fi
+      - name: Run zsh setup script on macOS
+        run: |
+          set -x
+          export AUTO_INSTALL=y
+          ./zsh_setup.sh
+          EXIT_CODE=$?
 
-    - name: Verify macOS installation
-      run: |
-        echo "=== macOS Verification ==="
-        
-        # Basic checks
-        command -v zsh && echo "✅ ZSH installed"
-        test -d ~/.oh-my-zsh && echo "✅ Oh My Zsh installed"
-        test -f ~/.zshrc && echo "✅ .zshrc exists"
-        
-        # Test syntax
-        zsh -n ~/.zshrc && echo "✅ .zshrc syntax valid"
-        
-        echo "🎉 macOS test completed successfully"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "❌ Script failed with exit code $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
+
+      - name: Verify macOS installation
+        run: |
+          echo "=== macOS Verification ==="
+
+          # Basic checks
+          command -v zsh && echo "✅ ZSH installed"
+          test -d ~/.oh-my-zsh && echo "✅ Oh My Zsh installed"
+          test -f ~/.zshrc && echo "✅ .zshrc exists"
+
+          # Test syntax
+          zsh -n ~/.zshrc && echo "✅ .zshrc syntax valid"
+
+          echo "🎉 macOS test completed successfully"
 
   report:
     runs-on: ubuntu-latest
+    permissions: read-all
+
     needs: [test-zsh-setup, test-rhel-like, test-macos]
     if: always()
     steps:
-    - name: Generate test report
-      run: |
-        echo "📊 Test Summary"
-        echo "Main Platform Tests: ${{ needs.test-zsh-setup.result }}"
-        echo "RHEL-like Tests: ${{ needs.test-rhel-like.result }}"
-        echo "macOS Test: ${{ needs.test-macos.result }}"
-        
-        if [ "${{ needs.test-zsh-setup.result }}" = "success" ] && [ "${{ needs.test-macos.result }}" = "success" ]; then
-          echo "🎉 All main tests passed!"
-          exit 0
-        else
-          echo "❌ Some tests failed"
-          exit 1
-        fi
+      - name: Generate test report
+        run: |
+          echo "📊 Test Summary"
+          echo "Main Platform Tests: ${{ needs.test-zsh-setup.result }}"
+          echo "RHEL-like Tests: ${{ needs.test-rhel-like.result }}"
+          echo "macOS Test: ${{ needs.test-macos.result }}"
+
+          if [ "${{ needs.test-zsh-setup.result }}" = "success" ] && [ "${{ needs.test-macos.result }}" = "success" ]; then
+            echo "🎉 All main tests passed!"
+            exit 0
+          else
+            echo "❌ Some tests failed"
+            exit 1
+          fi

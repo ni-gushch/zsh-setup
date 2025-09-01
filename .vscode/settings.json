@@ -1,11 +1,16 @@
 {
   "cSpell.words": [
+    "almalinux",
     "CLICOLOR",
     "Cxegedabagacad",
     "dircolors",
+    "elif",
     "fgrep",
     "LSCOLORS",
     "Meslo",
-    "Powerlevel"
+    "Powerlevel",
+    "procps",
+    "rockylinux",
+    "shellenv"
   ]
 }
