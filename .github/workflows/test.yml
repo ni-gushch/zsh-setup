@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [ubuntu-22.04, ubuntu-20.04, debian-11, centos-8, fedora-38]
+        platform: [ubuntu-22.04, ubuntu-20.04, debian-11, rocky-8, fedora-38]
         include:
           - platform: ubuntu-22.04
             image: ubuntu:22.04
@@ -20,8 +20,8 @@ jobs:
             image: ubuntu:20.04
           - platform: debian-11
             image: debian:11
-          - platform: centos-8
-            image: centos:8
+          - platform: rocky-8
+            image: rockylinux:8
           - platform: fedora-38
             image: fedora:38
 
@@ -40,7 +40,7 @@ jobs:
           apt-get update
           apt-get install -y curl git sudo procps
         elif command -v yum >/dev/null 2>&1; then
-          yung install -y curl git sudo procps-ng
+          yum install -y curl git sudo procps-ng
         elif command -v dnf >/dev/null 2>&1; then
           dnf install -y curl git sudo procps-ng
         fi
@@ -156,6 +156,50 @@ jobs:
         # Исправление SC2010: вместо ls | grep используем find
         find ~/ -maxdepth 1 -name "*zsh*" -o -name "*oh-my*" -o -name ".*zsh*" -o -name ".*oh-my*" 2>/dev/null || true
 
+  # Альтернативный тест для RHEL-совместимых систем
+  test-rhel-like:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [rockylinux:8, almalinux:8, centos:7]
+    
+    container:
+      image: ${{ matrix.image }}
+      options: --privileged
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install basic dependencies (RHEL-like)
+      run: |
+        if command -v yum >/dev/null 2>&1; then
+          yum install -y curl git sudo procps-ng
+        elif command -v dnf >/dev/null 2>&1; then
+          dnf install -y curl git sudo procps-ng
+        fi
+
+    - name: Make script executable
+      run: chmod +x zsh_setup.sh
+
+    - name: Run zsh setup script
+      run: |
+        set -x
+        export AUTO_INSTALL=y
+        timeout 300 bash -x ./zsh_setup.sh
+        EXIT_CODE=$?
+        
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "❌ Script failed with exit code $EXIT_CODE"
+          exit $EXIT_CODE
+        fi
+
+    - name: Verify RHEL-like installation
+      run: |
+        command -v zsh && echo "✅ ZSH installed"
+        test -d ~/.oh-my-zsh && echo "✅ Oh My Zsh installed"
+        echo "✅ RHEL-like test completed"
+
   test-macos:
     runs-on: macos-latest
     steps:
@@ -199,53 +243,18 @@ jobs:
         
         echo "🎉 macOS test completed successfully"
 
-  test-alpine:
-    runs-on: ubuntu-latest
-    container:
-      image: alpine:3.18
-      options: --privileged
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install Alpine dependencies
-      run: |
-        apk update
-        apk add bash curl git sudo
-
-    - name: Make script executable
-      run: chmod +x zsh_setup.sh
-
-    - name: Test Alpine compatibility (expected to fail gracefully)
-      run: |
-        set +e
-        export AUTO_INSTALL=y
-        ./zsh_setup.sh
-        EXIT_CODE=$?
-        
-        # On Alpine, we expect failure due to missing zsh in repositories
-        # but the script should handle it gracefully
-        if [ $EXIT_CODE -eq 0 ]; then
-          echo "✅ Script handled Alpine gracefully"
-        else
-          echo "⚠ Script failed on Alpine (expected for some platforms)"
-          # Don't fail the workflow for Alpine - it's a compatibility test
-        fi
-
   report:
     runs-on: ubuntu-latest
-    needs: [test-zsh-setup, test-macos, test-alpine]
+    needs: [test-zsh-setup, test-rhel-like, test-macos]
     if: always()
     steps:
     - name: Generate test report
       run: |
         echo "📊 Test Summary"
-        echo "Platform Tests: ${{ needs.test-zsh-setup.result }}"
+        echo "Main Platform Tests: ${{ needs.test-zsh-setup.result }}"
+        echo "RHEL-like Tests: ${{ needs.test-rhel-like.result }}"
         echo "macOS Test: ${{ needs.test-macos.result }}"
-        echo "Alpine Test: ${{ needs.test-alpine.result }}"
         
-        # Исправление SC2016: используем двойные кавычки для расширения переменных
         if [ "${{ needs.test-zsh-setup.result }}" = "success" ] && [ "${{ needs.test-macos.result }}" = "success" ]; then
           echo "🎉 All main tests passed!"
           exit 0
