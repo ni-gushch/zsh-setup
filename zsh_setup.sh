@@ -27,16 +27,16 @@ install_package() {
 	local package=$1
 	if command_exists apt-get; then
 		# Debian/Ubuntu
-		sudo apt-get install -y "$package" > /dev/null 2>&1
+		sudo apt-get install -y "$package" >/dev/null 2>&1
 	elif command_exists yum; then
 		# RHEL/CentOS
-		sudo yum install -y "$package" > /dev/null 2>&1
+		sudo yum install -y "$package" >/dev/null 2>&1
 	elif command_exists dnf; then
 		# Fedora
-		sudo dnf install -y "$package" > /dev/null 2>&1
+		sudo dnf install -y "$package" >/dev/null 2>&1
 	elif command_exists brew; then
 		# macOS
-		brew install "$package" > /dev/null 2>&1
+		brew install "$package" >/dev/null 2>&1
 	else
 		echo -e "${RED}Could not detect package manager. Please install $package manually.${NC}"
 		return 1
@@ -68,7 +68,7 @@ fi
 # Install Oh My Zsh (unattended)
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
 	echo -e "${YELLOW}Installing Oh My Zsh...${NC}"
-	if ! sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended > /dev/null 2>&1; then
+	if ! sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended >/dev/null 2>&1; then
 		echo -e "${RED}Failed to install Oh My Zsh${NC}"
 		exit 1
 	fi
@@ -79,7 +79,7 @@ fi
 # Install Powerlevel10k theme
 if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
 	echo -e "${YELLOW}Installing Powerlevel10k theme...${NC}"
-	if ! git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" > /dev/null 2>&1; then
+	if ! git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" >/dev/null 2>&1; then
 		echo -e "${RED}Failed to install Powerlevel10k${NC}"
 		exit 1
 	fi
@@ -90,7 +90,7 @@ fi
 # Install zsh-autosuggestions plugin
 if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
 	echo -e "${YELLOW}Installing zsh-autosuggestions plugin...${NC}"
-	if ! git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" > /dev/null 2>&1; then
+	if ! git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" >/dev/null 2>&1; then
 		echo -e "${RED}Failed to install zsh-autosuggestions${NC}"
 		exit 1
 	fi
@@ -101,7 +101,7 @@ fi
 # Install zsh-syntax-highlighting plugin
 if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]; then
 	echo -e "${YELLOW}Installing zsh-syntax-highlighting plugin...${NC}"
-	if ! git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" > /dev/null 2>&1; then
+	if ! git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" >/dev/null 2>&1; then
 		echo -e "${RED}Failed to install zsh-syntax-highlighting${NC}"
 		exit 1
 	fi
@@ -208,7 +208,7 @@ fi
 # Source the new configuration for current session if possible
 if [ "$CURRENT_SHELL" = "zsh" ] && [ -f "$HOME/.zshrc" ]; then
 	# shellcheck source=/dev/null
-	source "$HOME/.zshrc" > /dev/null 2>&1
+	source "$HOME/.zshrc" >/dev/null 2>&1
 	echo -e "${GREEN}✓ Sourced new .zshrc configuration${NC}"
 fi
 
@@ -221,7 +221,7 @@ verify_installation() {
 	# Check if zsh is installed
 	if ! command_exists zsh; then
 		echo -e "${RED}✗ Zsh not found${NC}"
-		errors=$((errors+1))
+		errors=$((errors + 1))
 	else
 		echo -e "${GREEN}✓ Zsh installed${NC}"
 	fi
@@ -229,7 +229,7 @@ verify_installation() {
 	# Check if Oh My Zsh is installed
 	if [ ! -d "$HOME/.oh-my-zsh" ]; then
 		echo -e "${RED}✗ Oh My Zsh not found${NC}"
-		errors=$((errors+1))
+		errors=$((errors + 1))
 	else
 		echo -e "${GREEN}✓ Oh My Zsh installed${NC}"
 	fi
@@ -237,14 +237,14 @@ verify_installation() {
 	# Check if plugins are installed
 	if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
 		echo -e "${RED}✗ zsh-autosuggestions not found${NC}"
-		errors=$((errors+1))
+		errors=$((errors + 1))
 	else
 		echo -e "${GREEN}✓ zsh-autosuggestions installed${NC}"
 	fi
 
 	if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]; then
 		echo -e "${RED}✗ zsh-syntax-highlighting not found${NC}"
-		errors=$((errors+1))
+		errors=$((errors + 1))
 	else
 		echo -e "${GREEN}✓ zsh-syntax-highlighting installed${NC}"
 	fi
@@ -252,7 +252,7 @@ verify_installation() {
 	# Check if theme is installed
 	if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
 		echo -e "${RED}✗ Powerlevel10k not found${NC}"
-		errors=$((errors+1))
+		errors=$((errors + 1))
 	else
 		echo -e "${GREEN}✓ Powerlevel10k installed${NC}"
 	fi
@@ -260,7 +260,7 @@ verify_installation() {
 	# Check if .zshrc exists
 	if [ ! -f "$HOME/.zshrc" ]; then
 		echo -e "${RED}✗ .zshrc not found${NC}"
-		errors=$((errors+1))
+		errors=$((errors + 1))
 	else
 		echo -e "${GREEN}✓ .zshrc created${NC}"
 	fi
@@ -270,7 +270,7 @@ verify_installation() {
 		echo -e "${GREEN}✓ .zshrc syntax is valid${NC}"
 	else
 		echo -e "${RED}✗ .zshrc syntax is invalid${NC}"
-		errors=$((errors+1))
+		errors=$((errors + 1))
 	fi
 
 	if [ $errors -eq 0 ]; then
