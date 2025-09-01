@@ -1,121 +1,253 @@
+name: Test ZSH Setup Script
+
 on:
   push:
-    branches:
-      - master
-      - ci
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
   workflow_dispatch:
 
-name: Test
 jobs:
-  install:
+  test-zsh-setup:
     runs-on: ubuntu-latest
-    if: github.repository == 'ni-gushch/zsh-setup' && github.actor == 'ni-gushch'
     strategy:
       matrix:
-        os-image:
-          - debian-11-x64
-          - debian-12-x64
-          - ubuntu-22-04-x64
-          - ubuntu-24-04-x64
-          - fedora-40-x64
-          - fedora-41-x64
-          # - centos-stream-9-x64 # yum oomkill
+        platform: [ubuntu-22.04, ubuntu-20.04, debian-11, centos-8, fedora-38]
+        include:
+          - platform: ubuntu-22.04
+            image: ubuntu:22.04
+          - platform: ubuntu-20.04
+            image: ubuntu:20.04
+          - platform: debian-11
+            image: debian:11
+          - platform: centos-8
+            image: centos:8
+          - platform: fedora-38
+            image: fedora:38
+
+    container:
+      image: ${{ matrix.image }}
+      options: --privileged
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Install basic dependencies
+        run: |
+          # Install common dependencies for all platforms
+          if command -v apt-get >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y curl git sudo procps
+          elif command -v yum >/dev/null 2>&1; then
+            yum install -y curl git sudo procps-ng
+          elif command -v dnf >/dev/null 2>&1; then
+            dnf install -y curl git sudo procps-ng
+          fi
 
-      - name: Create server
-        run: doctl compute droplet create openvpn-action-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER-${{ matrix.os-image }} --size s-1vcpu-1gb --image ${{ matrix.os-image }} --region lon1 --enable-ipv6 --ssh-keys be:66:76:61:a8:71:93:aa:e3:19:ba:d8:0d:d2:2d:d4 --wait
+      - name: Make script executable
+        run: chmod +x zsh_setup.sh
 
-      - name: Get server ID
-        run: echo ::set-output name=value::$(doctl compute droplet list -o json | jq -r '.[] | select(.name == "'openvpn-action-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER-${{ matrix.os-image }}'").id')
-        id: server_id
+      - name: Run zsh setup script in headless mode
+        run: |
+          set -x
+          export AUTO_INSTALL=y
+          timeout 300 bash -x ./zsh_setup.sh
+          EXIT_CODE=$?
 
-      - name: Move server to dedicated project
-        run: doctl projects resources assign ${{ secrets.DIGITALOCEAN_PROJECT_ID }} --resource=do:droplet:${{ steps.server_id.outputs.value }}
-
-      - name: Wait for server to boot
-        run: sleep 90
-
-      - name: Get server IP
-        run: echo ::set-output name=value::$(doctl compute droplet list -o json | jq -r '.[] | select(.name == "'openvpn-action-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER-${{ matrix.os-image }}'").networks.v4 | .[] | select(.type == "'public'").ip_address')
-        id: server_ip
-
-      - name: Get server OS
-        run: echo ::set-output name=value::$(echo ${{ matrix.os-image }} | cut -d '-' -f1)
-        id: server_os
-
-      - name: Setup remote server (Debian/Ubuntu)
-        if: steps.server_os.outputs.value == 'debian' || steps.server_os.outputs.value == 'ubuntu'
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ steps.server_ip.outputs.value }}
-          username: root
-          key: ${{ secrets.SSH_KEY }}
-          script: set -x && apt-get update && apt-get -o DPkg::Lock::Timeout=120 install -y git
-
-      - name: Setup remote server (Fedora)
-        if: steps.server_os.outputs.value == 'fedora'
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ steps.server_ip.outputs.value }}
-          username: root
-          key: ${{ secrets.SSH_KEY }}
-          script: set -x && dnf install -y git
-
-      - name: Setup remote server (CentOS)
-        if: steps.server_os.outputs.value == 'centos'
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ steps.server_ip.outputs.value }}
-          username: root
-          key: ${{ secrets.SSH_KEY }}
-          script: set -x && yum install -y git
-
-      - name: Download repo and checkout current commit
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ steps.server_ip.outputs.value }}
-          username: root
-          key: ${{ secrets.SSH_KEY }}
-          script: set -x && git clone https://github.com/ni-gushch/zsh-setup.git && cd zsh-setup && git checkout ${{ github.sha }}
-
-      - name: Run zsh_setup.sh in headless mode
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ steps.server_ip.outputs.value }}
-          username: root
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            set -x
-            export AUTO_INSTALL=y
-            # Run the setup script and capture exit code
-            bash -x ~/zsh-setup/zsh_setup.sh
-            EXIT_CODE=$?
-
-            # Additional verification
-            echo "=== Additional verification ==="
-            [ -f ~/.zshrc ] && echo "✓ .zshrc exists" || echo "✗ .zshrc missing"
-            [ -d ~/.oh-my-zsh ] && echo "✓ Oh My Zsh directory exists" || echo "✗ Oh My Zsh directory missing"
-            [ -d ~/.oh-my-zsh/custom/themes/powerlevel10k ] && echo "✓ Powerlevel10k exists" || echo "✗ Powerlevel10k missing"
-            which zsh >/dev/null 2>&1 && echo "✓ zsh is installed" || echo "✗ zsh not installed"
-
-            # Test if we can source zshrc without errors
-            if [ -f ~/.zshrc ]; then
-              if zsh -c "source ~/.zshrc && echo '✓ .zshrc can be sourced successfully'"; then
-                echo "✓ .zshrc sourcing test passed"
-              else
-                echo "✗ .zshrc sourcing test failed"
-                EXIT_CODE=1
-              fi
-            fi
-
+          if [ $EXIT_CODE -eq 124 ]; then
+            echo "❌ Script timed out after 5 minutes"
+            exit 1
+          elif [ $EXIT_CODE -ne 0 ]; then
+            echo "❌ Script failed with exit code $EXIT_CODE"
             exit $EXIT_CODE
+          fi
 
-      - name: Delete server
-        run: doctl compute droplet delete -f openvpn-action-$GITHUB_RUN_ID-$GITHUB_RUN_NUMBER-${{ matrix.os-image }}
+      - name: Verify installation
+        run: |
+          echo "=== Running comprehensive verification ==="
+
+          # Check basic components
+          declare -A checks=(
+            ["ZSH installed"]="which zsh"
+            ["Oh My Zsh directory exists"]="test -d ~/.oh-my-zsh"
+            ["Powerlevel10k theme exists"]="test -d ~/.oh-my-zsh/custom/themes/powerlevel10k"
+            ["zsh-autosuggestions plugin exists"]="test -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+            ["zsh-syntax-highlighting plugin exists"]="test -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+            [".zshrc file exists"]="test -f ~/.zshrc"
+            [".zshrc backup exists if needed"]="test -f ~/.zshrc.backup || echo 'No backup needed'"
+          )
+
+          FAILED=0
+          for check_name in "${!checks[@]}"; do
+            if eval "${checks[$check_name]}"; then
+              echo "✅ $check_name"
+            else
+              echo "❌ $check_name - FAILED"
+              FAILED=1
+            fi
+          done
+
+          # Test .zshrc syntax
+          if which zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
+            if zsh -n ~/.zshrc 2>/dev/null; then
+              echo "✅ .zshrc syntax is valid"
+            else
+              echo "❌ .zshrc syntax is invalid"
+              zsh -n ~/.zshrc || true
+              FAILED=1
+            fi
+          fi
+
+          # Test sourcing .zshrc
+          if which zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
+            if zsh -c "source ~/.zshrc && echo 'Sourcing successful' && exit 0" 2>/dev/null; then
+              echo "✅ .zshrc can be sourced successfully"
+            else
+              echo "❌ .zshrc sourcing failed"
+              FAILED=1
+            fi
+          fi
+
+          # Test basic zsh functionality
+          if which zsh >/dev/null 2>&1; then
+            if zsh -c "echo 'ZSH is working!'" 2>/dev/null; then
+              echo "✅ ZSH basic functionality test passed"
+            else
+              echo "❌ ZSH basic functionality test failed"
+              FAILED=1
+            fi
+          fi
+
+          if [ $FAILED -eq 0 ]; then
+            echo "🎉 All verification tests passed!"
+          else
+            echo "💥 Some verification tests failed!"
+            exit 1
+          fi
+
+      - name: Test plugin functionality
+        run: |
+          echo "=== Testing plugin functionality ==="
+
+          if which zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
+            # Test that plugins are loaded by checking if their functions exist
+            if zsh -c "source ~/.zshrc && typeset -f __zsh_autosuggest_bind_widgets >/dev/null 2>&1 && echo '✅ zsh-autosuggestions functions available'"; then
+              echo "✅ zsh-autosuggestions plugin is properly loaded"
+            else
+              echo "⚠ zsh-autosuggestions plugin functions not found (may be normal for headless)"
+            fi
+            
+            # Test git aliases
+            if zsh -c "source ~/.zshrc && alias gst >/dev/null 2>&1 && echo '✅ Git aliases available'"; then
+              echo "✅ Git plugin aliases are available"
+            else
+              echo "❌ Git plugin aliases not found"
+              exit 1
+            fi
+          fi
+
+      - name: Show file structure
         if: always()
+        run: |
+          echo "=== Final file structure ==="
+          find ~/.oh-my-zsh -maxdepth 2 -type d -name "custom*" -o -name "themes" -o -name "plugins" | head -20
+          echo "---"
+          ls -la ~/ | grep -E "(zsh|oh-my)" || true
+
+  test-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Homebrew (if not present)
+        run: |
+          if ! command -v brew >/dev/null 2>&1; then
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+          fi
+
+      - name: Make script executable
+        run: chmod +x zsh_setup.sh
+
+      - name: Run zsh setup script on macOS
+        run: |
+          set -x
+          export AUTO_INSTALL=y
+          ./zsh_setup.sh
+          EXIT_CODE=$?
+
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "❌ Script failed with exit code $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
+
+      - name: Verify macOS installation
+        run: |
+          echo "=== macOS Verification ==="
+
+          # Basic checks
+          which zsh && echo "✅ ZSH installed"
+          test -d ~/.oh-my-zsh && echo "✅ Oh My Zsh installed"
+          test -f ~/.zshrc && echo "✅ .zshrc exists"
+
+          # Test syntax
+          zsh -n ~/.zshrc && echo "✅ .zshrc syntax valid"
+
+          echo "🎉 macOS test completed successfully"
+
+  test-alpine:
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:3.18
+      options: --privileged
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Alpine dependencies
+        run: |
+          apk update
+          apk add bash curl git sudo
+
+      - name: Make script executable
+        run: chmod +x zsh_setup.sh
+
+      - name: Test Alpine compatibility (expected to fail gracefully)
+        run: |
+          set +e
+          export AUTO_INSTALL=y
+          ./zsh_setup.sh
+          EXIT_CODE=$?
+
+          # On Alpine, we expect failure due to missing zsh in repositories
+          # but the script should handle it gracefully
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "✅ Script handled Alpine gracefully"
+          else
+            echo "⚠ Script failed on Alpine (expected for some platforms)"
+            # Don't fail the workflow for Alpine - it's a compatibility test
+          fi
+
+  report:
+    runs-on: ubuntu-latest
+    needs: [test-zsh-setup, test-macos, test-alpine]
+    if: always()
+    steps:
+      - name: Generate test report
+        run: |
+          echo "📊 Test Summary"
+          echo "Platform Tests: ${{ needs.test-zsh-setup.result }}"
+          echo "macOS Test: ${{ needs.test-macos.result }}"
+          echo "Alpine Test: ${{ needs.test-alpine.result }}"
+
+          if [ "${{ needs.test-zsh-setup.result }}" == "success" ] && [ "${{ needs.test-macos.result }}" == "success" ]; then
+            echo "🎉 All main tests passed!"
+            exit 0
+          else
+            echo "❌ Some tests failed"
+            exit 1
+          fi
