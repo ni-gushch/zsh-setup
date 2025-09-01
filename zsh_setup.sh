@@ -118,7 +118,7 @@ fi
 # Create optimized .zshrc configuration
 echo -e "${YELLOW}Creating optimized .zshrc configuration...${NC}"
 
-cat > ~/.zshrc << 'EOL'
+cat >~/.zshrc <<'EOL'
 # Enable Powerlevel10k instant prompt (should stay at the top of ~/.zshrc)
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.png" ]]; then
 	source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.png"
