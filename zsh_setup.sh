@@ -127,7 +127,7 @@ echo -e "${YELLOW}Creating optimized .zshrc configuration...${NC}"
 cat > ~/.zshrc << 'EOL'
 # Enable Powerlevel10k instant prompt (should stay at the top of ~/.zshrc)
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.png" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.png"
+	source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.png"
 fi
 
 # Path to your oh-my-zsh installation.
@@ -223,26 +223,26 @@ verify_installation() {
 
 	local errors=0
 
-    # Check if zsh is installed
-    if ! command_exists zsh; then
-    	echo -e "${RED}✗ Zsh not found${NC}"
-     	errors=$((errors+1))
-    else
-    	echo -e "${GREEN}✓ Zsh installed${NC}"
-    fi
+	# Check if zsh is installed
+	if ! command_exists zsh; then
+		echo -e "${RED}✗ Zsh not found${NC}"
+		errors=$((errors+1))
+	else
+		echo -e "${GREEN}✓ Zsh installed${NC}"
+	fi
 
-    # Check if Oh My Zsh is installed
-    if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    	echo -e "${RED}✗ Oh My Zsh not found${NC}"
-        errors=$((errors+1))
-    else
-    	echo -e "${GREEN}✓ Oh My Zsh installed${NC}"
-    fi
+	# Check if Oh My Zsh is installed
+	if [ ! -d "$HOME/.oh-my-zsh" ]; then
+		echo -e "${RED}✗ Oh My Zsh not found${NC}"
+		errors=$((errors+1))
+	else
+		echo -e "${GREEN}✓ Oh My Zsh installed${NC}"
+	fi
 
-    # Check if plugins are installed
-    if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
-    	echo -e "${RED}✗ zsh-autosuggestions not found${NC}"
-     	errors=$((errors+1))
+	# Check if plugins are installed
+	if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
+		echo -e "${RED}✗ zsh-autosuggestions not found${NC}"
+		errors=$((errors+1))
     else
     	echo -e "${GREEN}✓ zsh-autosuggestions installed${NC}"
     fi
@@ -254,29 +254,29 @@ verify_installation() {
 		echo -e "${GREEN}✓ zsh-syntax-highlighting installed${NC}"
 	fi
 
-    # Check if theme is installed
-    if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
-    	echo -e "${RED}✗ Powerlevel10k not found${NC}"
-     	errors=$((errors+1))
-    else
-    	echo -e "${GREEN}✓ Powerlevel10k installed${NC}"
-    fi
+	# Check if theme is installed
+	if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
+		echo -e "${RED}✗ Powerlevel10k not found${NC}"
+		errors=$((errors+1))
+	else
+		echo -e "${GREEN}✓ Powerlevel10k installed${NC}"
+	fi
 
-    # Check if .zshrc exists
-    if [ ! -f "$HOME/.zshrc" ]; then
-    	echo -e "${RED}✗ .zshrc not found${NC}"
-     	errors=$((errors+1))
-    else
-    	echo -e "${GREEN}✓ .zshrc created${NC}"
-    fi
+	# Check if .zshrc exists
+	if [ ! -f "$HOME/.zshrc" ]; then
+		echo -e "${RED}✗ .zshrc not found${NC}"
+		errors=$((errors+1))
+	else
+		echo -e "${GREEN}✓ .zshrc created${NC}"
+	fi
 
-    # Test zsh syntax
-    if zsh -n ~/.zshrc 2>/dev/null; then
-    	echo -e "${GREEN}✓ .zshrc syntax is valid${NC}"
-    else
-    	echo -e "${RED}✗ .zshrc syntax is invalid${NC}"
-     	errors=$((errors+1))
-    fi
+	# Test zsh syntax
+	if zsh -n ~/.zshrc 2>/dev/null; then
+		echo -e "${GREEN}✓ .zshrc syntax is valid${NC}"
+	else
+		echo -e "${RED}✗ .zshrc syntax is invalid${NC}"
+		errors=$((errors+1))
+	fi
 
 	if [ $errors -eq 0 ]; then
 		echo -e "${GREEN}🎉 All verifications passed! Installation successful!${NC}"
