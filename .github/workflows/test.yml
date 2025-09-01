@@ -69,36 +69,63 @@ jobs:
       run: |
         echo "=== Running comprehensive verification ==="
 
-        # Check basic components - используем два массива вместо ассоциативного
-        check_names=(
-          "ZSH installed"
-          "Oh My Zsh directory exists" 
-          "Powerlevel10k theme exists"
-          "zsh-autosuggestions plugin exists"
-          "zsh-syntax-highlighting plugin exists"
-          ".zshrc file exists"
-          ".zshrc backup exists if needed"
-        )
-
-        check_commands=(
-          "command -v zsh >/dev/null 2>&1"
-          "test -d ~/.oh-my-zsh"
-          "test -d ~/.oh-my-zsh/custom/themes/powerlevel10k"
-          "test -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-          "test -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-          "test -f ~/.zshrc"
-          "test -f ~/.zshrc.backup || echo 'No backup needed'"
-        )
-
+        # Check basic components - используем простой цикл вместо массива индексов
         FAILED=0
-        for i in "${!check_names[@]}"; do
-          if eval "${check_commands[$i]}"; then
-            echo "✅ ${check_names[$i]}"
-          else
-            echo "❌ ${check_names[$i]} - FAILED"
-            FAILED=1
-          fi
-        done
+
+        # ZSH installed
+        if command -v zsh >/dev/null 2>&1; then
+          echo "✅ ZSH installed"
+        else
+          echo "❌ ZSH installed - FAILED"
+          FAILED=1
+        fi
+
+        # Oh My Zsh directory exists
+        if test -d ~/.oh-my-zsh; then
+          echo "✅ Oh My Zsh directory exists"
+        else
+          echo "❌ Oh My Zsh directory exists - FAILED"
+          FAILED=1
+        fi
+
+        # Powerlevel10k theme exists
+        if test -d ~/.oh-my-zsh/custom/themes/powerlevel10k; then
+          echo "✅ Powerlevel10k theme exists"
+        else
+          echo "❌ Powerlevel10k theme exists - FAILED"
+          FAILED=1
+        fi
+
+        # zsh-autosuggestions plugin exists
+        if test -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions; then
+          echo "✅ zsh-autosuggestions plugin exists"
+        else
+          echo "❌ zsh-autosuggestions plugin exists - FAILED"
+          FAILED=1
+        fi
+
+        # zsh-syntax-highlighting plugin exists
+        if test -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting; then
+          echo "✅ zsh-syntax-highlighting plugin exists"
+        else
+          echo "❌ zsh-syntax-highlighting plugin exists - FAILED"
+          FAILED=1
+        fi
+
+        # .zshrc file exists
+        if test -f ~/.zshrc; then
+          echo "✅ .zshrc file exists"
+        else
+          echo "❌ .zshrc file exists - FAILED"
+          FAILED=1
+        fi
+
+        # .zshrc backup exists if needed
+        if test -f ~/.zshrc.backup; then
+          echo "✅ .zshrc backup exists"
+        else
+          echo "ℹ️  No backup needed"
+        fi
 
         # Test .zshrc syntax
         if command -v zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
