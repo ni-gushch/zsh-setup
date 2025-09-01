@@ -45,68 +45,68 @@ install_package() {
 
 # Check and install Zsh if not installed
 if ! command_exists zsh; then
-    echo -e "${YELLOW}Zsh not found. Installing...${NC}"
-    if ! install_package zsh; then
-        echo -e "${RED}Failed to install zsh${NC}"
-        exit 1
-    fi
+	echo -e "${YELLOW}Zsh not found. Installing...${NC}"
+	if ! install_package zsh; then
+		echo -e "${RED}Failed to install zsh${NC}"
+		exit 1
+	fi
 else
-    echo -e "${GREEN}✓ Zsh is already installed${NC}"
+	echo -e "${GREEN}✓ Zsh is already installed${NC}"
 fi
 
 # Check and install Git if not installed
 if ! command_exists git; then
-    echo -e "${YELLOW}Git not found. Installing...${NC}"
-    if ! install_package git; then
-        echo -e "${RED}Failed to install git${NC}"
-        exit 1
-    fi
+	echo -e "${YELLOW}Git not found. Installing...${NC}"
+	if ! install_package git; then
+		echo -e "${RED}Failed to install git${NC}"
+		exit 1
+	fi
 else
-    echo -e "${GREEN}✓ Git is already installed${NC}"
+	echo -e "${GREEN}✓ Git is already installed${NC}"
 fi
 
 # Install Oh My Zsh (unattended)
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    echo -e "${YELLOW}Installing Oh My Zsh...${NC}"
-    if ! sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended > /dev/null 2>&1; then
-        echo -e "${RED}Failed to install Oh My Zsh${NC}"
-        exit 1
-    fi
+	echo -e "${YELLOW}Installing Oh My Zsh...${NC}"
+	if ! sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended > /dev/null 2>&1; then
+		echo -e "${RED}Failed to install Oh My Zsh${NC}"
+		exit 1
+	fi
 else
-    echo -e "${GREEN}✓ Oh My Zsh is already installed${NC}"
+	echo -e "${GREEN}✓ Oh My Zsh is already installed${NC}"
 fi
 
 # Install Powerlevel10k theme
 if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
-    echo -e "${YELLOW}Installing Powerlevel10k theme...${NC}"
-    if ! git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" > /dev/null 2>&1; then
-        echo -e "${RED}Failed to install Powerlevel10k${NC}"
-        exit 1
-    fi
+	echo -e "${YELLOW}Installing Powerlevel10k theme...${NC}"
+	if ! git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" > /dev/null 2>&1; then
+		echo -e "${RED}Failed to install Powerlevel10k${NC}"
+		exit 1
+	fi
 else
-    echo -e "${GREEN}✓ Powerlevel10k is already installed${NC}"
+	echo -e "${GREEN}✓ Powerlevel10k is already installed${NC}"
 fi
 
 # Install zsh-autosuggestions plugin
 if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
-    echo -e "${YELLOW}Installing zsh-autosuggestions plugin...${NC}"
-    if ! git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" > /dev/null 2>&1; then
-        echo -e "${RED}Failed to install zsh-autosuggestions${NC}"
-        exit 1
-    fi
+	echo -e "${YELLOW}Installing zsh-autosuggestions plugin...${NC}"
+	if ! git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" > /dev/null 2>&1; then
+		echo -e "${RED}Failed to install zsh-autosuggestions${NC}"
+		exit 1
+	fi
 else
-    echo -e "${GREEN}✓ zsh-autosuggestions is already installed${NC}"
+	echo -e "${GREEN}✓ zsh-autosuggestions is already installed${NC}"
 fi
 
 # Install zsh-syntax-highlighting plugin
 if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]; then
-    echo -e "${YELLOW}Installing zsh-syntax-highlighting plugin...${NC}"
-    if ! git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" > /dev/null 2>&1; then
-        echo -e "${RED}Failed to install zsh-syntax-highlighting${NC}"
-        exit 1
-    fi
+	echo -e "${YELLOW}Installing zsh-syntax-highlighting plugin...${NC}"
+	if ! git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" > /dev/null 2>&1; then
+		echo -e "${RED}Failed to install zsh-syntax-highlighting${NC}"
+		exit 1
+	fi
 else
-    echo -e "${GREEN}✓ zsh-syntax-highlighting is already installed${NC}"
+	echo -e "${GREEN}✓ zsh-syntax-highlighting is already installed${NC}"
 fi
 
 # Backup existing .zshrc if it exists
@@ -206,8 +206,9 @@ else
 fi
 
 # Source the new configuration for current session if possible
-if [ "$CURRENT_SHELL" = "zsh" ]; then
-	source ~/.zshrc > /dev/null 2>&1
+if [ "$CURRENT_SHELL" = "zsh" ] && [ -f "$HOME/.zshrc" ]; then
+	# shellcheck source=/dev/null
+	source "$HOME/.zshrc" > /dev/null 2>&1
 	echo -e "${GREEN}✓ Sourced new .zshrc configuration${NC}"
 fi
 
