@@ -243,9 +243,9 @@ verify_installation() {
 	if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions" ]; then
 		echo -e "${RED}✗ zsh-autosuggestions not found${NC}"
 		errors=$((errors+1))
-    else
-    	echo -e "${GREEN}✓ zsh-autosuggestions installed${NC}"
-    fi
+	else
+		echo -e "${GREEN}✓ zsh-autosuggestions installed${NC}"
+	fi
 
 	if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting" ]; then
 		echo -e "${RED}✗ zsh-syntax-highlighting not found${NC}"
