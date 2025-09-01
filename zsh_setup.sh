@@ -30,7 +30,7 @@ install_package() {
 		sudo apt-get install -y "$package" >/dev/null 2>&1
 	elif command_exists yum; then
 		# RHEL/CentOS
-		sudo yum install -y "$package" >/dev/null 2>&1
+		sudo yum update && sudo yum install -y "$package" >/dev/null 2>&1
 	elif command_exists dnf; then
 		# Fedora
 		sudo dnf install -y "$package" >/dev/null 2>&1
