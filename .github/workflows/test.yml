@@ -1,10 +1,12 @@
+---
+
 name: Test ZSH Setup Script
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
@@ -66,28 +68,38 @@ jobs:
     - name: Verify installation
       run: |
         echo "=== Running comprehensive verification ==="
-        
-        # Check basic components
-        declare -A checks=(
-          ["ZSH installed"]="command -v zsh >/dev/null 2>&1"
-          ["Oh My Zsh directory exists"]="test -d ~/.oh-my-zsh"
-          ["Powerlevel10k theme exists"]="test -d ~/.oh-my-zsh/custom/themes/powerlevel10k"
-          ["zsh-autosuggestions plugin exists"]="test -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-          ["zsh-syntax-highlighting plugin exists"]="test -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-          [".zshrc file exists"]="test -f ~/.zshrc"
-          [".zshrc backup exists if needed"]="test -f ~/.zshrc.backup || echo 'No backup needed'"
+
+        # Check basic components - используем два массива вместо ассоциативного
+        check_names=(
+          "ZSH installed"
+          "Oh My Zsh directory exists" 
+          "Powerlevel10k theme exists"
+          "zsh-autosuggestions plugin exists"
+          "zsh-syntax-highlighting plugin exists"
+          ".zshrc file exists"
+          ".zshrc backup exists if needed"
         )
-        
+
+        check_commands=(
+          "command -v zsh >/dev/null 2>&1"
+          "test -d ~/.oh-my-zsh"
+          "test -d ~/.oh-my-zsh/custom/themes/powerlevel10k"
+          "test -d ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+          "test -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+          "test -f ~/.zshrc"
+          "test -f ~/.zshrc.backup || echo 'No backup needed'"
+        )
+
         FAILED=0
-        for check_name in "${!checks[@]}"; do
-          if eval "${checks[$check_name]}"; then
-            echo "✅ $check_name"
+        for i in "${!check_names[@]}"; do
+          if eval "${check_commands[$i]}"; then
+            echo "✅ ${check_names[$i]}"
           else
-            echo "❌ $check_name - FAILED"
+            echo "❌ ${check_names[$i]} - FAILED"
             FAILED=1
           fi
         done
-        
+
         # Test .zshrc syntax
         if command -v zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
           if zsh -n ~/.zshrc 2>/dev/null; then
@@ -98,7 +110,7 @@ jobs:
             FAILED=1
           fi
         fi
-        
+
         # Test sourcing .zshrc
         if command -v zsh >/dev/null 2>&1 && [ -f ~/.zshrc ]; then
           if zsh -c "source ~/.zshrc && echo 'Sourcing successful' && exit 0" 2>/dev/null; then
@@ -108,7 +120,7 @@ jobs:
             FAILED=1
           fi
         fi
-        
+
         # Test basic zsh functionality
         if command -v zsh >/dev/null 2>&1; then
           if zsh -c "echo 'ZSH is working!'" 2>/dev/null; then
@@ -118,7 +130,7 @@ jobs:
             FAILED=1
           fi
         fi
-        
+
         if [ $FAILED -eq 0 ]; then
           echo "🎉 All verification tests passed!"
         else
@@ -210,7 +222,8 @@ jobs:
       run: |
         if ! command -v brew >/dev/null 2>&1; then
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+          # Исправление SC2016: используем двойные кавычки и экранирование
+          echo "eval \"\$(/opt/homebrew/bin/brew shellenv)\"" >> ~/.zprofile
           eval "$(/opt/homebrew/bin/brew shellenv)"
         fi
 
