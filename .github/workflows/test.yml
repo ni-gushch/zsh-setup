@@ -200,7 +200,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: [rockylinux:8, almalinux:8, centos:7]
+        image: [rockylinux:8, almalinux:8]
     
     container:
       image: ${{ matrix.image }}
