@@ -24,7 +24,7 @@ if [ -f ~/.zshrc ]; then
 	if ! zsh -c "source ~/.zshrc && echo '.zshrc sourced successfully'"; then
 		echo "❌ .zshrc sourcing failed"
 		exit 1
-    fi
+	fi
 else
 	echo "❌ .zshrc not found"
 	exit 1
