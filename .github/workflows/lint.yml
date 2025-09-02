@@ -33,11 +33,11 @@ jobs:
 
       - name: Fix formatting with Prettier
         run: |
+          npx prettier --write .github/workflows/lint.yml
           npx prettier --write .github/dependabot.yml
           npx prettier --write .github/linters/.markdown-lint.yml
-          npx prettier --write .github/workflows/lint.yml
-          npx prettier --write .github/zizmor.yaml
-
+          npx prettier --write .github/linters/zizmor.yaml
+          
       - name: Lint Code Base
         uses: super-linter/super-linter@ffde3b2b33b745cb612d787f669ef9442b1339a6
         env:
