@@ -300,10 +300,11 @@ jobs:
     if: always()
     steps:
       - name: Generate test report
+      # add to run between  Main Platform Tests macOS Test
+      # echo "RHEL-like Tests: ${{ needs.test-rhel-like.result }}"
         run: |
           echo "📊 Test Summary"
           echo "Main Platform Tests: ${{ needs.test-zsh-setup.result }}"
-          echo "RHEL-like Tests: ${{ needs.test-rhel-like.result }}"
           echo "macOS Test: ${{ needs.test-macos.result }}"
 
           if [ "${{ needs.test-zsh-setup.result }}" = "success" ] && [ "${{ needs.test-macos.result }}" = "success" ]; then
