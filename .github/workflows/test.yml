@@ -8,6 +8,8 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+permissions: read-all
+
 jobs:
   test-zsh-setup:
     runs-on: ubuntu-latest
