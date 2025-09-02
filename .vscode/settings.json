@@ -11,6 +11,7 @@
     "Powerlevel",
     "procps",
     "rockylinux",
-    "shellenv"
+    "shellenv",
+    "zizmor"
   ]
 }

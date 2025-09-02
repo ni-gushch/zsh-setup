@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      
+
       - name: Fix formatting with Prettier
         run: |
           npx prettier --write .github/dependabot.yml

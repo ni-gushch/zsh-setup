@@ -13,7 +13,6 @@ permissions: read-all
 jobs:
   test-zsh-setup:
     runs-on: ubuntu-latest
-    permissions: read-all
 
     strategy:
       matrix:
@@ -37,6 +36,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install basic dependencies
         run: |
@@ -201,7 +202,6 @@ jobs:
   # Альтернативный тест для RHEL-совместимых систем
   test-rhel-like:
     runs-on: ubuntu-latest
-    permissions: read-all
 
     strategy:
       matrix:
@@ -214,6 +214,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install basic dependencies (RHEL-like)
         run: |
@@ -246,11 +248,12 @@ jobs:
 
   test-macos:
     runs-on: macos-latest
-    permissions: read-all
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Homebrew (if not present)
         run: |
@@ -292,7 +295,6 @@ jobs:
 
   report:
     runs-on: ubuntu-latest
-    permissions: read-all
 
     needs: [test-zsh-setup, test-rhel-like, test-macos]
     if: always()
