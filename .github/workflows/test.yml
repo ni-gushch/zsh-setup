@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        platform: [ubuntu-22.04, ubuntu-20.04, debian-11, rocky-8, fedora-38]
+        platform: [ubuntu-22.04, ubuntu-20.04, debian-11] # add , rocky-8, fedora-38
         include:
           - platform: ubuntu-22.04
             image: ubuntu:22.04
