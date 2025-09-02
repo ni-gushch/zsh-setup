@@ -30,7 +30,13 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      
+      - name: Fix formatting with Prettier
+        run: |
+          npx prettier --write .github/dependabot.yml
+          npx prettier --write .github/linters/.markdown-lint.yml
+
       - name: Lint Code Base
-        uses: super-linter/super-linter@v8.1.0
+        uses: super-linter/super-linter@ffde3b2b33b745cb612d787f669ef9442b1339a6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
