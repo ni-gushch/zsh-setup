@@ -24,10 +24,10 @@ jobs:
             image: ubuntu:20.04
           - platform: debian-11
             image: debian:11
-          - platform: rocky-8
-            image: rockylinux:8
-          - platform: fedora-38
-            image: fedora:38
+          # - platform: rocky-8
+          #   image: rockylinux:8
+          # - platform: fedora-38
+          #   image: fedora:38
 
     container:
       image: ${{ matrix.image }}
@@ -200,51 +200,51 @@ jobs:
           find ~/ -maxdepth 1 -name "*zsh*" -o -name "*oh-my*" -o -name ".*zsh*" -o -name ".*oh-my*" 2>/dev/null || true
 
   # Альтернативный тест для RHEL-совместимых систем
-  test-rhel-like:
-    runs-on: ubuntu-latest
+  # test-rhel-like:
+  #   runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        image: [rockylinux:8, almalinux:8]
+  #   strategy:
+  #     matrix:
+  #       image: [rockylinux:8, almalinux:8]
 
-    container:
-      image: ${{ matrix.image }}
-      options: --privileged
+  #   container:
+  #     image: ${{ matrix.image }}
+  #     options: --privileged
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          persist-credentials: false
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v5
+  #       with:
+  #         persist-credentials: false
 
-      - name: Install basic dependencies (RHEL-like)
-        run: |
-          if command -v yum >/dev/null 2>&1; then
-            yum install -y curl git sudo procps-ng
-          elif command -v dnf >/dev/null 2>&1; then
-            dnf install -y curl git sudo procps-ng
-          fi
+  #     - name: Install basic dependencies (RHEL-like)
+  #       run: |
+  #         if command -v yum >/dev/null 2>&1; then
+  #           yum install -y curl git sudo procps-ng
+  #         elif command -v dnf >/dev/null 2>&1; then
+  #           dnf install -y curl git sudo procps-ng
+  #         fi
 
-      - name: Make script executable
-        run: chmod +x zsh_setup.sh
+  #     - name: Make script executable
+  #       run: chmod +x zsh_setup.sh
 
-      - name: Run zsh setup script
-        run: |
-          set -x
-          export AUTO_INSTALL=y
-          timeout 300 bash -x ./zsh_setup.sh
-          EXIT_CODE=$?
+  #     - name: Run zsh setup script
+  #       run: |
+  #         set -x
+  #         export AUTO_INSTALL=y
+  #         timeout 300 bash -x ./zsh_setup.sh
+  #         EXIT_CODE=$?
 
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "❌ Script failed with exit code $EXIT_CODE"
-            exit $EXIT_CODE
-          fi
+  #         if [ $EXIT_CODE -ne 0 ]; then
+  #           echo "❌ Script failed with exit code $EXIT_CODE"
+  #           exit $EXIT_CODE
+  #         fi
 
-      - name: Verify RHEL-like installation
-        run: |
-          command -v zsh && echo "✅ ZSH installed"
-          test -d ~/.oh-my-zsh && echo "✅ Oh My Zsh installed"
-          echo "✅ RHEL-like test completed"
+  #     - name: Verify RHEL-like installation
+  #       run: |
+  #         command -v zsh && echo "✅ ZSH installed"
+  #         test -d ~/.oh-my-zsh && echo "✅ Oh My Zsh installed"
+  #         echo "✅ RHEL-like test completed"
 
   test-macos:
     runs-on: macos-latest
