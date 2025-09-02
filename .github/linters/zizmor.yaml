@@ -1,6 +1,7 @@
 ---
 rules:
   unpinned-uses:
-    disable: true
+    ignore: 
+      - "*"
   excessive-permissions:
     disable: true
