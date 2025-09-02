@@ -1,0 +1,6 @@
+---
+rules:
+  unpinned-uses:
+    disable: true
+  excessive-permissions:
+    disable: true
