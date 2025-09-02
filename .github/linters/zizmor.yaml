@@ -2,13 +2,19 @@
 rules:
   unpinned-uses:
     ignore: 
-      - workflows/lint.yml
-      - workflows/test.yml
+      - .github/workflows/lint.yml
+      - /github/workspace/.github/workflows/lint.yml
+      - .github/workflows/test.yml
+      - /github/workspace/.github/workflows/test.yml
   excessive-permissions:
     ignore: 
-      - workflows/lint.yml
-      - workflows/test.yml
+      - .github/workflows/lint.yml
+      - /github/workspace/.github/workflows/lint.yml
+      - .github/workflows/test.yml
+      - /github/workspace/.github/workflows/test.yml
   template-injection:
     ignore: 
-      - workflows/lint.yml
-      - workflows/test.yml
+      - .github/workflows/lint.yml
+      - /github/workspace/.github/workflows/lint.yml
+      - .github/workflows/test.yml
+      - /github/workspace/.github/workflows/test.yml
