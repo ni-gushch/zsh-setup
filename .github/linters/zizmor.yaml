@@ -2,6 +2,9 @@
 rules:
   unpinned-uses:
     ignore: 
-      - "*"
+      - lint.yml
+      - test.yml
   excessive-permissions:
-    disable: true
+    ignore: 
+      - lint.yml
+      - test.yml
