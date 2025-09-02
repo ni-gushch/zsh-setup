@@ -1,7 +1,7 @@
 # zsh-setup
 
-![Test](https://github.com/ni-gushch/zsh-setup/workflows/Test/badge.svg)
-![Lint](https://github.com/ni-gushch/zsh-setup/workflows/Lint/badge.svg)
+[![Test ZSH Setup Script](https://github.com/ni-gushch/zsh-setup/actions/workflows/test.yml/badge.svg)](https://github.com/ni-gushch/zsh-setup/actions/workflows/test.yml)
+[![Lint](https://github.com/ni-gushch/zsh-setup/actions/workflows/lint.yml/badge.svg)](https://github.com/ni-gushch/zsh-setup/actions/workflows/lint.yml)
 
 Если вам надоело каждый раз вручную устанавливать и настраивать Zsh оболочку на вашем новом устройстве, то можно воспользоваться этим решением.
 

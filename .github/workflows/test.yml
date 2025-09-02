@@ -300,8 +300,8 @@ jobs:
     if: always()
     steps:
       - name: Generate test report
-      # add to run between  Main Platform Tests macOS Test
-      # echo "RHEL-like Tests: ${{ needs.test-rhel-like.result }}"
+        # add to run between  Main Platform Tests macOS Test
+        # echo "RHEL-like Tests: ${{ needs.test-rhel-like.result }}"
         run: |
           echo "📊 Test Summary"
           echo "Main Platform Tests: ${{ needs.test-zsh-setup.result }}"
