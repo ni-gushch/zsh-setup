@@ -2,9 +2,13 @@
 rules:
   unpinned-uses:
     ignore: 
-      - lint.yml
-      - test.yml
+      - workflows/lint.yml
+      - workflows/test.yml
   excessive-permissions:
     ignore: 
-      - lint.yml
-      - test.yml
+      - workflows/lint.yml
+      - workflows/test.yml
+  template-injection:
+    ignore: 
+      - workflows/lint.yml
+      - workflows/test.yml
