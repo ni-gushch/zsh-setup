@@ -39,7 +39,7 @@ jobs:
           npx prettier --write .github/linters/zizmor.yaml
 
       - name: Lint Code Base
-        uses: super-linter/super-linter@7bba2eeb89d01dc9bfd93c497477a57e72c83240
+        uses: super-linter/super-linter@61abc07d755095a68f4987d1c2c3d1d64408f1f9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_GITHUB_ACTIONS_ZIZMOR: false
